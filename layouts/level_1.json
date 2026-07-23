@@ -1,0 +1,189 @@
+[
+  {
+    "name": "level_0",
+    "__size": [
+      1234,
+      768
+    ],
+    "__childs": {
+      "sky": {
+        "__color": "#7ea2ff",
+        "__size": [
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "userInputArea": {
+        "__color": "#5f12e9",
+        "sha": 0,
+        "sva": 2,
+        "__size": [
+          140,
+          100
+        ],
+        "__ofs": [
+          105,
+          -96,
+          -15
+        ],
+        "__childs": {
+          "_0": {
+            "__color": "#fb22a0",
+            "__rotate": 3.9,
+            "__size": [
+              25,
+              25
+            ],
+            "__childs": {
+              "rubber": {
+                "__color": "#362207",
+                "sha": 2,
+                "sva": 1,
+                "__size": [
+                  148,
+                  18
+                ]
+              }
+            }
+          }
+        }
+      },
+      "ph_world": {
+        "__size": [
+          1,
+          1
+        ],
+        "__childs": {
+          "_0": {
+            "__isDestructibleTarget": 1,
+            "__physics": {
+              "__isStatic": false,
+              "__friction": 10,
+              "__frictionAir": 1,
+              "__frictionStatic": 50,
+              "__restitution": 0,
+              "__density": 1,
+              "__bodyType": 0
+            },
+            "__img": "block_1",
+            "__ofs": [
+              296,
+              -16
+            ]
+          },
+          "ground": {
+            "__color": "#296b22",
+            "__physics": {
+              "__isStatic": true,
+              "__friction": 10,
+              "__frictionAir": 1,
+              "__frictionStatic": 50,
+              "__restitution": 0,
+              "__density": 1,
+              "__bodyType": 0
+            },
+            "__size": [
+              1234,
+              211
+            ],
+            "__y": 395
+          },
+          "_2": {
+            "__isDestructibleTarget": 1,
+            "__physics": {
+              "__isStatic": false,
+              "__friction": 10,
+              "__frictionAir": 1,
+              "__frictionStatic": 50,
+              "__restitution": 0,
+              "__density": 1,
+              "__bodyType": 0
+            },
+            "__img": "block_2",
+            "__ofs": [
+              299,
+              86
+            ]
+          },
+          "_3": {
+            "__isDestructibleTarget": 1,
+            "__physics": {
+              "__isStatic": false,
+              "__friction": 10,
+              "__frictionAir": 1,
+              "__frictionStatic": 50,
+              "__restitution": 0,
+              "__density": 1,
+              "__bodyType": 0
+            },
+            "__img": "block_3",
+            "__ofs": [
+              192,
+              207
+            ]
+          },
+          "_4": {
+            "__isDestructibleTarget": 1,
+            "__physics": {
+              "__isStatic": false,
+              "__friction": 10,
+              "__frictionAir": 1,
+              "__frictionStatic": 50,
+              "__restitution": 0,
+              "__density": 1,
+              "__bodyType": 0
+            },
+            "__img": "block_3",
+            "__ofs": [
+              408,
+              207
+            ]
+          },
+          "_5": {
+            "__isDestructibleTarget": 1,
+            "__physics": {
+              "__isStatic": false,
+              "__friction": 10,
+              "__frictionAir": 1,
+              "__frictionStatic": 50,
+              "__restitution": 0,
+              "__density": 1,
+              "__bodyType": 1
+            },
+            "__img": "block_4",
+            "__size": [
+              126,
+              126
+            ],
+            "__ofs": [
+              299,
+              223
+            ]
+          },
+          "wall": {
+            "__color": "#296b22",
+            "__physics": {
+              "__isStatic": true,
+              "__friction": 10,
+              "__frictionAir": 1,
+              "__frictionStatic": 50,
+              "__restitution": 0,
+              "__density": 1,
+              "__bodyType": 0
+            },
+            "__size": [
+              65,
+              689
+            ],
+            "__ofs": [
+              585,
+              -44
+            ]
+          }
+        }
+      }
+    }
+  }
+]
