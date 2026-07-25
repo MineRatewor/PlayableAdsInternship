@@ -33,6 +33,8 @@
             "game-session.js",
             "collision-system.js",
             "destructible-system.js",
+            "projectile-controller.js",
+            "level-controller.js",
             "main.js"
         ],
         "../../eeditor/plugins/": [

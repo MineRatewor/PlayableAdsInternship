@@ -1,6 +1,11 @@
 var Game = Game || {};
 
 Game.Config = {
+    levels: [
+        {
+            layout: 'level_1'
+        }
+    ],
     projectile: {
         image: 'bird_1',
         size: [72, 72],

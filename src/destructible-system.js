@@ -5,9 +5,13 @@ Game.DestructibleSystem = function (session, collisionSystem, onAllTargetsDestro
     this.collisionSystem = collisionSystem;
     this.onAllTargetsDestroyed = onAllTargetsDestroyed;
     this.awakeScheduled = false;
+    this.active = false;
+    this.generation = 0;
+    this.timers = [];
 };
 
 Game.DestructibleSystem.prototype.registerTarget = function (node, hp) {
+    this.active = true;
     this.session.targets.push(node);
     this.session.targetsLeft++;
     node.__isRegisteredTarget = true;
@@ -37,8 +41,10 @@ Game.DestructibleSystem.prototype.registerDamage = function (node, hp) {
 Game.DestructibleSystem.prototype.damage = function (node, impactSpeed) {
     var body = node.__ph_body;
     var damage;
+    var destructibles;
+    var generation;
 
-    if (!body || !body.__hp) {
+    if (!this.active || !body || !body.__hp) {
         return;
     }
 
@@ -55,11 +61,14 @@ Game.DestructibleSystem.prototype.damage = function (node, impactSpeed) {
     body.__hp = mmax(0, body.__hp - damage);
 
     if (!body.__hp) {
-        var destructibles = this;
+        destructibles = this;
+        generation = this.generation;
 
         this.collisionSystem.unregister(body);
         looperPost(function () {
-            destructibles.remove(node);
+            if (destructibles.isCurrent(generation)) {
+                destructibles.remove(node);
+            }
         });
     }
 };
@@ -72,7 +81,7 @@ Game.DestructibleSystem.prototype.remove = function (node) {
     var y;
     var isTarget;
 
-    if (!node || node.__destructed) {
+    if (!this.active || !node || node.__destructed) {
         return;
     }
 
@@ -123,6 +132,7 @@ Game.DestructibleSystem.prototype.createFragments = function (centerX, centerY, 
 
 Game.DestructibleSystem.prototype.createFragment = function (x, y, velocity) {
     var destructibles = this;
+    var generation = this.generation;
     var fragment = this.session.levelNode.__addChildBox({
         __img: 'break_' + randomInt(1, 9),
         __ofs: [x, y, -20],
@@ -139,7 +149,7 @@ Game.DestructibleSystem.prototype.createFragment = function (x, y, velocity) {
     });
 
     looperPost(function () {
-        if (!fragment.__ph_body) {
+        if (!destructibles.isCurrent(generation) || !fragment.__ph_body) {
             return;
         }
 
@@ -148,7 +158,7 @@ Game.DestructibleSystem.prototype.createFragment = function (x, y, velocity) {
             velocity.y + randomFloat(-8, 3)
         ));
 
-        _setTimeout(function () {
+        destructibles.schedule(function () {
             if (!fragment.__ph_body || fragment.__destructed) {
                 return;
             }
@@ -158,7 +168,7 @@ Game.DestructibleSystem.prototype.createFragment = function (x, y, velocity) {
                 Game.Config.destructible.fragmentHp
             );
 
-            _setTimeout(function () {
+            destructibles.schedule(function () {
                 destructibles.remove(fragment);
             }, randomFloat(5, 10));
         }, 1);
@@ -167,6 +177,7 @@ Game.DestructibleSystem.prototype.createFragment = function (x, y, velocity) {
 
 Game.DestructibleSystem.prototype.scheduleAwakeTargets = function () {
     var destructibles = this;
+    var generation = this.generation;
 
     if (this.awakeScheduled) {
         return;
@@ -174,6 +185,10 @@ Game.DestructibleSystem.prototype.scheduleAwakeTargets = function () {
 
     this.awakeScheduled = true;
     looperPost(function () {
+        if (!destructibles.isCurrent(generation)) {
+            return;
+        }
+
         destructibles.awakeScheduled = false;
         $each(destructibles.session.targets, function (target) {
             target.__ph_awake();
@@ -185,8 +200,36 @@ Game.DestructibleSystem.prototype.playBreakSound = function () {
     playSound('break_' + randomInt(1, 4), 0, 0, 0.5);
 };
 
+Game.DestructibleSystem.prototype.isCurrent = function (generation) {
+    return this.active && this.generation === generation;
+};
+
+Game.DestructibleSystem.prototype.schedule = function (callback, delay) {
+    var destructibles = this;
+    var generation = this.generation;
+    var timerId = _setTimeout(function () {
+        removeFromArray(timerId, destructibles.timers);
+
+        if (destructibles.isCurrent(generation)) {
+            callback();
+        }
+    }, delay);
+
+    this.timers.push(timerId);
+    return timerId;
+};
+
 Game.DestructibleSystem.prototype.dispose = function () {
     var collisionSystem = this.collisionSystem;
+    var i;
+
+    this.active = false;
+    this.generation++;
+
+    for (i = 0; i < this.timers.length; i++) {
+        _clearTimeout(this.timers[i]);
+    }
+    this.timers = [];
 
     $each(this.session.targets, function (target) {
         if (target.__ph_body) {
