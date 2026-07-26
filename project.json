@@ -84,11 +84,6 @@
             "build_res/atlas-1.json?"
         ],
         [
-            "atlas",
-            "build_res/atlas-2.png?",
-            "build_res/atlas-2.json?"
-        ],
-        [
             "effect",
             "tail.effect.json"
         ],

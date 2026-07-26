@@ -1,6 +1,6 @@
 [
   {
-    "name": "level_0",
+    "name": "level_1",
     "__size": [
       1234,
       768
@@ -16,37 +16,80 @@
         ]
       },
       "userInputArea": {
-        "__color": "#5f12e9",
-        "sha": 0,
-        "sva": 2,
         "__size": [
-          140,
-          100
+          180,
+          160
         ],
         "__ofs": [
-          105,
-          -96,
+          -439,
+          58,
           -15
         ],
         "__childs": {
-          "_0": {
-            "__color": "#fb22a0",
-            "__rotate": 3.9,
+          "slingshotBack": {
+            "__img": "slingshot_back",
             "__size": [
-              25,
-              25
+              123,
+              288
+            ],
+            "__y": 117
+          },
+          "leftRubberPivot": {
+            "__rotate": 180,
+            "__ofs": [
+              -35,
+              2,
+              -5
             ],
             "__childs": {
-              "rubber": {
-                "__color": "#362207",
+              "leftRubber": {
+                "__img": "slingshot_band",
                 "sha": 2,
                 "sva": 1,
                 "__size": [
-                  148,
-                  18
+                  35,
+                  12
                 ]
               }
             }
+          },
+          "rightRubberPivot": {
+            "__ofs": [
+              35,
+              2,
+              -5
+            ],
+            "__childs": {
+              "rightRubber": {
+                "__img": "slingshot_band",
+                "sha": 2,
+                "sva": 1,
+                "__size": [
+                  35,
+                  12
+                ]
+              }
+            }
+          },
+          "pouch": {
+            "__img": "slingshot_pouch",
+            "__size": [
+              64,
+              24
+            ],
+            "__z": -10
+          },
+          "slingshotFront": {
+            "__img": "slingshot_front",
+            "__size": [
+              63,
+              144
+            ],
+            "__ofs": [
+              -29,
+              45,
+              -15
+            ]
           }
         }
       },
@@ -56,8 +99,7 @@
           1
         ],
         "__childs": {
-          "_0": {
-            "__isDestructibleTarget": 1,
+          "target_1": {
             "__physics": {
               "__isStatic": false,
               "__friction": 10,
@@ -90,8 +132,7 @@
             ],
             "__y": 395
           },
-          "_2": {
-            "__isDestructibleTarget": 1,
+          "target_2": {
             "__physics": {
               "__isStatic": false,
               "__friction": 10,
@@ -107,8 +148,7 @@
               86
             ]
           },
-          "_3": {
-            "__isDestructibleTarget": 1,
+          "target_3": {
             "__physics": {
               "__isStatic": false,
               "__friction": 10,
@@ -124,8 +164,7 @@
               207
             ]
           },
-          "_4": {
-            "__isDestructibleTarget": 1,
+          "target_4": {
             "__physics": {
               "__isStatic": false,
               "__friction": 10,
@@ -141,8 +180,7 @@
               207
             ]
           },
-          "_5": {
-            "__isDestructibleTarget": 1,
+          "target_5": {
             "__physics": {
               "__isStatic": false,
               "__friction": 10,

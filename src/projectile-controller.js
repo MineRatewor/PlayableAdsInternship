@@ -4,22 +4,36 @@ Game.ProjectileController = function (session, config) {
     this.session = session;
     this.config = config;
     this.levelNode = null;
-    this.rubberNode = null;
+    this.leftRubberNode = null;
+    this.rightRubberNode = null;
+    this.pouchNode = null;
     this.inputNode = null;
+    this.readyProjectileNode = null;
     this.timers = [];
 };
 
-Game.ProjectileController.prototype.attach = function (levelNode, rubberNode, inputNode) {
+Game.ProjectileController.prototype.attach = function (
+    levelNode,
+    leftRubberNode,
+    rightRubberNode,
+    pouchNode,
+    inputNode
+) {
     var controller = this;
 
     this.levelNode = levelNode;
-    this.rubberNode = rubberNode;
+    this.leftRubberNode = leftRubberNode;
+    this.rightRubberNode = rightRubberNode;
+    this.pouchNode = pouchNode;
     this.inputNode = inputNode;
 
     inputNode.__dragDist = 1;
 
     inputNode.__dragStart = function () {
-        controller.rubberNode.__killAllAnimations();
+        controller.prepareProjectile();
+        controller.leftRubberNode.__killAllAnimations();
+        controller.rightRubberNode.__killAllAnimations();
+        controller.pouchNode.__killAllAnimations();
     };
 
     inputNode.__drag = function (x, y) {
@@ -28,34 +42,103 @@ Game.ProjectileController.prototype.attach = function (levelNode, rubberNode, in
             .sub(new Vector2(x, y));
 
         this.__dmouse = dragVector;
-        controller.rubberNode.__parent.__rotate =
-            -dragVector.__angle() * RAD2DEG;
-        controller.rubberNode.__width = dragVector.__length();
+        controller.movePouch(x, y);
     };
 
     inputNode.__dragEnd = function () {
         if (!this.__dmouse) {
+            controller.removePreparedProjectile();
+            controller.resetSling();
             return;
         }
 
         controller.session.shots++;
         controller.launch(this.__dmouse);
+        controller.removePreparedProjectile();
+        controller.resetSling();
         this.__dmouse = null;
     };
 };
 
+Game.ProjectileController.prototype.prepareProjectile = function () {
+    if (
+        this.readyProjectileNode &&
+        !this.readyProjectileNode.__destructed
+    ) {
+        return this.readyProjectileNode;
+    }
+
+    this.readyProjectileNode = this.pouchNode.__addChildBox({
+        __img: this.config.image,
+        __size: this.config.readySize,
+        __ofs: this.config.readyOffset
+    }).update();
+
+    return this.readyProjectileNode;
+};
+
+Game.ProjectileController.prototype.removePreparedProjectile = function () {
+    if (
+        this.readyProjectileNode &&
+        !this.readyProjectileNode.__destructed
+    ) {
+        this.readyProjectileNode.__removeFromParent();
+    }
+
+    this.readyProjectileNode = null;
+};
+
+Game.ProjectileController.prototype.pointRubberAt = function (
+    rubberNode,
+    x,
+    y
+) {
+    var anchorPosition = rubberNode.__parent.__worldPosition;
+    var rubberVector = anchorPosition
+        .__clone()
+        .sub(new Vector2(x, y));
+
+    rubberNode.__parent.__rotate = -rubberVector.__angle() * RAD2DEG;
+    rubberNode.__width = rubberVector.__length();
+};
+
+Game.ProjectileController.prototype.movePouch = function (x, y) {
+    var inputPosition = this.inputNode.__worldPosition;
+
+    this.pouchNode.__x = x - inputPosition.x;
+    this.pouchNode.__y = y - inputPosition.y;
+
+    this.pointRubberAt(this.leftRubberNode, x, y);
+    this.pointRubberAt(this.rightRubberNode, x, y);
+};
+
+Game.ProjectileController.prototype.resetSling = function () {
+    var inputPosition = this.inputNode.__worldPosition;
+
+    this.pouchNode.__x = 0;
+    this.pouchNode.__y = 0;
+    this.pointRubberAt(
+        this.leftRubberNode,
+        inputPosition.x,
+        inputPosition.y
+    );
+    this.pointRubberAt(
+        this.rightRubberNode,
+        inputPosition.x,
+        inputPosition.y
+    );
+};
+
 Game.ProjectileController.prototype.launch = function (dragVector) {
     var controller = this;
-    var worldPosition = this.inputNode.__worldPosition;
+    var worldPosition = this.inputNode.__worldPosition
+        .__clone()
+        .sub(dragVector);
     var projectile;
     var velocity;
     var timerId;
 
     playSound('punch');
-
-    this.rubberNode.__anim({
-        __width: 10
-    }, 0.4, 0, easeElasticO);
 
     projectile = this.levelNode.__addChildBox({
         __img: this.config.image,
@@ -105,6 +188,8 @@ Game.ProjectileController.prototype.dispose = function () {
         this.remove(this.session.projectiles[i]);
     }
 
+    this.removePreparedProjectile();
+
     if (this.inputNode && !this.inputNode.__destructed) {
         this.inputNode.__dragStart = 0;
         this.inputNode.__drag = 0;
@@ -113,6 +198,9 @@ Game.ProjectileController.prototype.dispose = function () {
     }
 
     this.levelNode = null;
-    this.rubberNode = null;
+    this.leftRubberNode = null;
+    this.rightRubberNode = null;
+    this.pouchNode = null;
     this.inputNode = null;
+    this.readyProjectileNode = null;
 };

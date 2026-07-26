@@ -9,6 +9,8 @@ Game.Config = {
     projectile: {
         image: 'bird_1',
         size: [72, 72],
+        readySize: [52, 52],
+        readyOffset: [0, -6, -2],
         launchPower: 0.2,
         lifetime: 2,
         physics: {

@@ -22,6 +22,9 @@ Game.LevelController.prototype.load = function (levelIndex) {
     var controller = this;
     var levelConfig = this.levels[levelIndex];
     var inputNode;
+    var leftRubberNode;
+    var rightRubberNode;
+    var pouchNode;
     var generation;
 
     if (!levelConfig) {
@@ -39,8 +42,17 @@ Game.LevelController.prototype.load = function (levelIndex) {
     this.session.levelNode = scene
         .__addChildBox(levelConfig.layout)
         .__setAliasesData({
-            rubber: function (node) {
+            leftRubber: function (node) {
+                leftRubberNode = node;
+            },
+
+            rightRubber: function (node) {
+                rightRubberNode = node;
                 controller.session.rubberNode = node;
+            },
+
+            pouch: function (node) {
+                pouchNode = node;
             },
 
             userInputArea: function (node) {
@@ -50,7 +62,9 @@ Game.LevelController.prototype.load = function (levelIndex) {
 
     this.projectileController.attach(
         this.session.levelNode,
-        this.session.rubberNode,
+        leftRubberNode,
+        rightRubberNode,
+        pouchNode,
         inputNode
     );
 
@@ -65,7 +79,11 @@ Game.LevelController.prototype.load = function (levelIndex) {
         controller.collisionSystem.start();
 
         levelNode.__traverse(function (node) {
-            if (node.__ph_body && node.__isDestructibleTarget) {
+            if (
+                node.__ph_body &&
+                node.name &&
+                node.name.indexOf('target_') === 0
+            ) {
                 controller.destructibleSystem.registerTarget(
                     node,
                     Game.Config.destructible.targetHp
