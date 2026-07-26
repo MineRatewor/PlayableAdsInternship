@@ -1,8 +1,13 @@
 var Game = Game || {};
 
-Game.ProjectileController = function (session, config) {
+Game.ProjectileController = function (
+    session,
+    config,
+    trajectorySystem
+) {
     this.session = session;
     this.config = config;
+    this.trajectorySystem = trajectorySystem;
     this.levelNode = null;
     this.leftRubberNode = null;
     this.rightRubberNode = null;
@@ -26,11 +31,13 @@ Game.ProjectileController.prototype.attach = function (
     this.rightRubberNode = rightRubberNode;
     this.pouchNode = pouchNode;
     this.inputNode = inputNode;
+    this.trajectorySystem.attach(levelNode, inputNode);
 
     inputNode.__dragDist = 1;
 
     inputNode.__dragStart = function () {
         controller.prepareProjectile();
+        controller.trajectorySystem.beginAiming();
         controller.leftRubberNode.__killAllAnimations();
         controller.rightRubberNode.__killAllAnimations();
         controller.pouchNode.__killAllAnimations();
@@ -43,9 +50,12 @@ Game.ProjectileController.prototype.attach = function (
 
         this.__dmouse = dragVector;
         controller.movePouch(x, y);
+        controller.trajectorySystem.update(dragVector);
     };
 
     inputNode.__dragEnd = function () {
+        controller.trajectorySystem.hide();
+
         if (!this.__dmouse) {
             controller.removePreparedProjectile();
             controller.resetSling();
@@ -189,6 +199,7 @@ Game.ProjectileController.prototype.dispose = function () {
     }
 
     this.removePreparedProjectile();
+    this.trajectorySystem.dispose();
 
     if (this.inputNode && !this.inputNode.__destructed) {
         this.inputNode.__dragStart = 0;

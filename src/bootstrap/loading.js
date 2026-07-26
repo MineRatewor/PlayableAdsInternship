@@ -32,4 +32,3 @@ set(__window, '$INIT$', (projectData) => {
     });
 
 });
-

@@ -28,14 +28,18 @@
             "windows.js"
         ],
         "src/": [
-            "loading.js",
-            "game-config.js",
-            "game-session.js",
-            "collision-system.js",
-            "destructible-system.js",
-            "projectile-controller.js",
-            "level-controller.js",
-            "main.js"
+            "bootstrap/loading.js",
+            "config/game-config.js",
+            "core/game-session.js",
+            "systems/collision-system.js",
+            "systems/destructible-system.js",
+            "systems/trajectory/trajectory-target-cache.js",
+            "systems/trajectory/trajectory-point-pool.js",
+            "systems/trajectory/trajectory-predictor.js",
+            "systems/trajectory/trajectory-system.js",
+            "controllers/projectile-controller.js",
+            "controllers/level-controller.js",
+            "bootstrap/main.js"
         ],
         "../../eeditor/plugins/": [
             "physics.js",

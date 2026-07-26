@@ -2,9 +2,24 @@ options.__soundDisabled = 0;
 
 Game.session = new Game.GameSession();
 Game.collisionSystem = new Game.CollisionSystem();
+Game.trajectoryPointPool = new Game.TrajectoryPointPool(
+    Game.Config.projectile.trajectory
+);
+Game.trajectoryTargetCache = new Game.TrajectoryTargetCache();
+Game.trajectoryPredictor = new Game.TrajectoryPredictor(
+    Game.Config.projectile.trajectory,
+    Game.Config.projectile
+);
+Game.trajectorySystem = new Game.TrajectorySystem(
+    Game.Config.projectile,
+    Game.trajectoryPredictor,
+    Game.trajectoryPointPool,
+    Game.trajectoryTargetCache
+);
 Game.projectiles = new Game.ProjectileController(
     Game.session,
-    Game.Config.projectile
+    Game.Config.projectile,
+    Game.trajectorySystem
 );
 Game.destructibles = new Game.DestructibleSystem(
     Game.session,
