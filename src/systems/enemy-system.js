@@ -3,15 +3,19 @@ var Game = Game || {};
 Game.EnemySystem = function (
     session,
     collisionSystem,
+    scoreSystem,
     config,
+    vfxPool,
     onAllEnemiesDestroyed
 ) {
     this.session = session;
     this.collisionSystem = collisionSystem;
+    this.scoreSystem = scoreSystem;
     this.config = config;
+    this.vfxPool = vfxPool;
     this.onAllEnemiesDestroyed = onAllEnemiesDestroyed;
     this.active = false;
-    this.timers = [];
+    this.timerGroup = new Game.TimerGroup();
     this.deathZones = [];
     this.generation = 0;
 };
@@ -128,7 +132,7 @@ Game.EnemySystem.prototype.handleCollision = function (
     }
 
     if (otherBody && otherBody.__isProjectile) {
-        projectileId = otherBody.id;
+        projectileId = otherBody.__projectileId;
 
         if (state.hitProjectiles[projectileId]) {
             return;
@@ -174,9 +178,7 @@ Game.EnemySystem.prototype.damage = function (node, damage) {
 Game.EnemySystem.prototype.schedule = function (callback, delay) {
     var enemySystem = this;
     var generation = this.generation;
-    var timerId = _setTimeout(function () {
-        removeFromArray(timerId, enemySystem.timers);
-
+    return this.timerGroup.schedule(function () {
         if (
             enemySystem.active &&
             enemySystem.generation === generation
@@ -184,9 +186,6 @@ Game.EnemySystem.prototype.schedule = function (callback, delay) {
             callback();
         }
     }, delay);
-
-    this.timers.push(timerId);
-    return timerId;
 };
 
 Game.EnemySystem.prototype.die = function (node) {
@@ -209,6 +208,7 @@ Game.EnemySystem.prototype.die = function (node) {
     }
 
     state.status = 'dying';
+    this.playDeathSound();
     direction = body.velocity.x < 0 ? -1 : 1;
     startX = node.__offset.x;
     startY = node.__offset.y;
@@ -260,6 +260,10 @@ Game.EnemySystem.prototype.die = function (node) {
     }, 0.58);
 };
 
+Game.EnemySystem.prototype.playDeathSound = function () {
+    Game.playStandaloneSound('enemy_death', 0.8);
+};
+
 Game.EnemySystem.prototype.canAnimate = function (node) {
     return (
         this.active &&
@@ -271,28 +275,37 @@ Game.EnemySystem.prototype.canAnimate = function (node) {
 };
 
 Game.EnemySystem.prototype.createDeathBurst = function (node) {
-    var parent = node.__parent;
-    var centerX = node.__offset.x;
-    var centerY = node.__offset.y;
+    var center;
+    var centerX;
+    var centerY;
     var i;
     var feather;
     var angle;
     var distance;
 
-    if (!parent) {
+    if (!this.vfxPool) {
         return;
     }
+
+    center = this.vfxPool.getNodePosition(node);
+    centerX = center.x;
+    centerY = center.y;
 
     for (i = 0; i < 5; i++) {
         angle = -150 + i * 75 + randomInt(-15, 15);
         distance = randomInt(35, 65);
-        feather = parent.__addChildBox({
-            __img: 'feather',
-            __ofs: [centerX, centerY, -25],
-            __size: [randomInt(42, 58), randomInt(42, 58)],
-            __rotate: randomInt(0, 360),
-            __alpha: 1
-        }).update();
+        feather = this.vfxPool.acquire('feather');
+
+        if (!feather) {
+            continue;
+        }
+
+        feather.__x = centerX;
+        feather.__y = centerY;
+        feather.__width = randomInt(42, 58);
+        feather.__height = feather.__width;
+        feather.__rotate = randomInt(0, 360);
+        feather.__alpha = 1;
 
         feather.__anim({
             __x: centerX + cos(angle * DEG2RAD) * distance,
@@ -300,7 +313,8 @@ Game.EnemySystem.prototype.createDeathBurst = function (node) {
             __rotate: feather.__rotate + randomInt(90, 220),
             __scaleF: 0,
             __alpha: 0
-        }, 0.5, 0, easeSineO).__removeAfter(0.52);
+        }, 0.5, 0, easeSineO);
+        this.vfxPool.releaseAfter('feather', feather, 0.52);
     }
 };
 
@@ -326,6 +340,10 @@ Game.EnemySystem.prototype.remove = function (node) {
     }
 
     state.status = 'removed';
+    this.scoreSystem.addEnemy(
+        node.__offset.x,
+        node.__offset.y
+    );
     body = node.__ph_body || state.body;
 
     if (body) {
@@ -345,15 +363,11 @@ Game.EnemySystem.prototype.remove = function (node) {
 
 Game.EnemySystem.prototype.dispose = function () {
     var collisionSystem = this.collisionSystem;
-    var i;
 
     this.active = false;
     this.generation++;
 
-    for (i = 0; i < this.timers.length; i++) {
-        _clearTimeout(this.timers[i]);
-    }
-    this.timers = [];
+    this.timerGroup.clear();
 
     $each(this.session.enemies, function (enemy) {
         if (enemy.__ph_body) {

@@ -30,14 +30,20 @@
         "src/": [
             "bootstrap/loading.js",
             "config/game-config.js",
+            "core/object-pool.js",
+            "core/timer-group.js",
             "core/game-session.js",
             "systems/collision-system.js",
+            "systems/vfx/vfx-pool.js",
+            "systems/score-system.js",
             "systems/destructible-system.js",
             "systems/enemy-system.js",
+            "systems/tnt-system.js",
             "systems/trajectory/trajectory-target-cache.js",
             "systems/trajectory/trajectory-point-pool.js",
             "systems/trajectory/trajectory-predictor.js",
             "systems/trajectory/trajectory-system.js",
+            "systems/projectile/projectile-pool.js",
             "controllers/projectile-controller.js",
             "controllers/level-controller.js",
             "bootstrap/main.js"
@@ -56,7 +62,7 @@
             "ru"
         ],
         "__defaultTextProperties": {
-            "__fontface": "Roboto_Thin"
+            "__fontface": "RussoOne"
         },
         "__upscaleResolution": {
             "x": 1234,
@@ -89,23 +95,17 @@
             "build_res/atlas-1.json?"
         ],
         [
-            "atlas",
-            "build_res/atlas-2.png?",
-            "build_res/atlas-2.json?"
-        ],
-        [
-            "effect",
-            "tail.effect.json"
-        ],
-        [
             "font",
             [
-                "Roboto-Thin"
+                "RussoOne"
             ]
         ],
         [
             "layout",
             "level_1.json",
+            "level_2.json",
+            "level_3.json",
+            "lose.json",
             "win.json"
         ],
         [
@@ -133,8 +133,8 @@
                 "type": "atlas",
                 "description": "create atlas file with all textures for the game",
                 "name": "atlas",
-                "width": 512,
-                "height": 512,
+                "width": 2048,
+                "height": 2048,
                 "src": "./img/*.*",
                 "dst": "build_res/",
                 "format": "short",
@@ -166,7 +166,8 @@
                     "shaders/*",
                     "layouts/*.json",
                     "fonts/*.*",
-                    "vfx/*",
+                    "sounds/enemy_death.mp3",
+                    "sounds/game_over.mp3",
                     "build_res/*.json",
                     "build_res/*.png",
                     "build_res/*.mp3"
@@ -182,7 +183,9 @@
                 ],
                 "dst": "build_res/min.js",
                 "rmdebug": "debug/undebug,3d/no3d,cheats/endcheats,multiclass/unmulticlass",
-                "configuration": "release"
+                "configuration": "release",
+                "advanced": false,
+                "myminify": false
             },
             {
                 "type": "clean",

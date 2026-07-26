@@ -3,18 +3,29 @@ var Game = Game || {};
 Game.ProjectileController = function (
     session,
     config,
-    trajectorySystem
+    trajectorySystem,
+    projectilePool,
+    vfxPool,
+    onShotsExhausted
 ) {
     this.session = session;
     this.config = config;
     this.trajectorySystem = trajectorySystem;
+    this.projectilePool = projectilePool;
+    this.vfxPool = vfxPool;
+    this.onShotsExhausted = onShotsExhausted;
     this.levelNode = null;
     this.leftRubberNode = null;
     this.rightRubberNode = null;
     this.pouchNode = null;
     this.inputNode = null;
     this.readyProjectileNode = null;
-    this.timers = [];
+    this.reserveProjectileNodes = [];
+    this.ammoHudNode = null;
+    this.ammoTextNode = null;
+    this.isReloading = false;
+    this.isAiming = false;
+    this.timerGroup = new Game.TimerGroup();
 };
 
 Game.ProjectileController.prototype.attach = function (
@@ -31,11 +42,22 @@ Game.ProjectileController.prototype.attach = function (
     this.rightRubberNode = rightRubberNode;
     this.pouchNode = pouchNode;
     this.inputNode = inputNode;
+    this.timerGroup.clear();
+    this.projectilePool.attach(levelNode);
     this.trajectorySystem.attach(levelNode, inputNode);
+    this.session.shotsRemaining = this.config.shotsPerRound;
+    this.isReloading = false;
+    this.isAiming = false;
 
     inputNode.__dragDist = 1;
 
     inputNode.__dragStart = function () {
+        if (!controller.canAim()) {
+            controller.isAiming = false;
+            return;
+        }
+
+        controller.isAiming = true;
         controller.prepareProjectile();
         controller.trajectorySystem.beginAiming();
         controller.leftRubberNode.__killAllAnimations();
@@ -44,6 +66,10 @@ Game.ProjectileController.prototype.attach = function (
     };
 
     inputNode.__drag = function (x, y) {
+        if (!controller.isAiming) {
+            return;
+        }
+
         var dragVector = this.__worldPosition
             .__clone()
             .sub(new Vector2(x, y));
@@ -59,6 +85,12 @@ Game.ProjectileController.prototype.attach = function (
     };
 
     inputNode.__dragEnd = function () {
+        if (!controller.isAiming) {
+            this.__dmouse = null;
+            return;
+        }
+
+        controller.isAiming = false;
         controller.trajectorySystem.hide();
 
         if (!this.__dmouse) {
@@ -68,11 +100,141 @@ Game.ProjectileController.prototype.attach = function (
         }
 
         controller.session.shots++;
+        controller.session.shotsRemaining--;
+        controller.updateAmmoHud();
         controller.launch(this.__dmouse);
         controller.removePreparedProjectile();
         controller.resetSling();
+        controller.updateReserveProjectiles();
+        controller.scheduleReload();
+        controller.scheduleLoseCheck();
         this.__dmouse = null;
     };
+
+    this.prepareProjectile();
+    this.updateReserveProjectiles();
+    this.createAmmoHud();
+    this.updateAmmoHud();
+};
+
+Game.ProjectileController.prototype.scheduleLoseCheck = function () {
+    var controller = this;
+    var config = this.config.settle;
+    var stableChecks = 0;
+    var elapsed = 0;
+
+    if (this.session.shotsRemaining > 0) {
+        return;
+    }
+
+    function checkLevelState() {
+        if (controller.session.status !== 'playing') {
+            return;
+        }
+
+        elapsed += config.checkInterval;
+        stableChecks = controller.isLevelSettled()
+            ? stableChecks + 1
+            : 0;
+
+        if (
+            stableChecks >= config.stableChecks ||
+            elapsed >= config.maxWait
+        ) {
+            controller.onShotsExhausted();
+            return;
+        }
+
+        controller.timerGroup.schedule(
+            checkLevelState,
+            config.checkInterval
+        );
+    }
+
+    this.timerGroup.schedule(checkLevelState, config.checkInterval);
+};
+
+Game.ProjectileController.prototype.isLevelSettled = function () {
+    var threshold = this.config.settle.speedThreshold;
+    var thresholdSquared = threshold * threshold;
+    var settled = this.session.projectiles.length === 0;
+
+    if (!settled) {
+        return false;
+    }
+
+    $each(this.session.enemies, function (enemy) {
+        var state = enemy.__enemyState;
+
+        if (
+            state &&
+            state.status === 'dying'
+        ) {
+            settled = false;
+            return;
+        }
+
+        if (
+            enemy.__ph_body &&
+            controllerBodyIsMoving(
+                enemy.__ph_body,
+                thresholdSquared
+            )
+        ) {
+            settled = false;
+        }
+    });
+
+    $each(this.session.structures, function (structure) {
+        if (
+            structure.__ph_body &&
+            controllerBodyIsMoving(
+                structure.__ph_body,
+                thresholdSquared
+            )
+        ) {
+            settled = false;
+        }
+    });
+
+    $each(this.session.tnts, function (tnt) {
+        if (
+            tnt.__tntState === 'fused' ||
+            (
+                tnt.__ph_body &&
+                controllerBodyIsMoving(
+                    tnt.__ph_body,
+                    thresholdSquared
+                )
+            )
+        ) {
+            settled = false;
+        }
+    });
+
+    return settled;
+};
+
+function controllerBodyIsMoving(body, thresholdSquared) {
+    return (
+        !body.isStatic &&
+        !body.isSleeping &&
+        (
+            body.velocity.x * body.velocity.x +
+            body.velocity.y * body.velocity.y >
+                thresholdSquared
+        )
+    );
+}
+
+Game.ProjectileController.prototype.canAim = function () {
+    return (
+        this.session.status === 'playing' &&
+        this.session.shotsRemaining > 0 &&
+        !this.isReloading &&
+        this.readyProjectileNode &&
+        !this.readyProjectileNode.__destructed
+    );
 };
 
 Game.ProjectileController.prototype.prepareProjectile = function () {
@@ -80,6 +242,7 @@ Game.ProjectileController.prototype.prepareProjectile = function () {
         this.readyProjectileNode &&
         !this.readyProjectileNode.__destructed
     ) {
+        this.readyProjectileNode.__visible = 1;
         return this.readyProjectileNode;
     }
 
@@ -90,6 +253,115 @@ Game.ProjectileController.prototype.prepareProjectile = function () {
     }).update();
 
     return this.readyProjectileNode;
+};
+
+Game.ProjectileController.prototype.updateReserveProjectiles = function () {
+    var reserveConfig = this.config.reserve;
+    var reserveCount = this.session.shotsRemaining;
+    var i;
+
+    if (!this.isReloading && this.readyProjectileNode) {
+        reserveCount--;
+    }
+
+    while (
+        this.reserveProjectileNodes.length <
+        this.config.shotsPerRound - 1
+    ) {
+        i = this.reserveProjectileNodes.length;
+        this.reserveProjectileNodes.push(
+            this.inputNode.__addChildBox({
+                __img: this.config.image,
+                __size: reserveConfig.size,
+                __ofs: [
+                    reserveConfig.startOffset[0] -
+                        i * reserveConfig.spacing,
+                    reserveConfig.startOffset[1],
+                    reserveConfig.startOffset[2]
+                ]
+            }).update()
+        );
+    }
+
+    for (i = 0; i < this.reserveProjectileNodes.length; i++) {
+        this.reserveProjectileNodes[i].__visible =
+            i < reserveCount ? 1 : 0;
+    }
+};
+
+Game.ProjectileController.prototype.createAmmoHud = function () {
+    var hudConfig = this.config.hud;
+    var ammoBadge;
+
+    this.ammoHudNode = this.levelNode.__addChildBox({
+        __size: hudConfig.size,
+        __ofs: hudConfig.offset
+    }).update();
+
+    this.ammoHudNode.__addChildBox({
+        __img: this.config.image,
+        __size: hudConfig.iconSize,
+        __ofs: hudConfig.iconOffset
+    }).update();
+
+    ammoBadge = this.ammoHudNode.__addChildBox({
+        __color: '#18243d',
+        __alpha: 0.92,
+        __corner: [21, 21],
+        __size: hudConfig.badgeSize,
+        __ofs: hudConfig.badgeOffset
+    }).update();
+
+    this.ammoTextNode = ammoBadge.__addChildBox({
+        __size: [72, 38],
+        __text: {
+            __text: '0/0',
+            __fontsize: 29,
+            __fontface: 'RussoOne',
+            __fontWeight: 10,
+            __color: '#ffffff',
+            __autoscale: 0,
+            __dontLocalize: 1,
+            __lineWidth: 1.5,
+            __lineColor: '#07101f',
+            __lineAlpha: 0.9
+        }
+    }).update();
+};
+
+Game.ProjectileController.prototype.updateAmmoHud = function () {
+    if (!this.ammoTextNode || this.ammoTextNode.__destructed) {
+        return;
+    }
+
+    this.ammoTextNode.__text =
+        this.session.shotsRemaining +
+        '/' +
+        this.config.shotsPerRound;
+};
+
+Game.ProjectileController.prototype.scheduleReload = function () {
+    var controller = this;
+
+    if (this.session.shotsRemaining <= 0) {
+        this.isReloading = false;
+        return;
+    }
+
+    this.isReloading = true;
+    this.timerGroup.schedule(function () {
+        if (
+            !controller.inputNode ||
+            controller.inputNode.__destructed ||
+            controller.session.status !== 'playing'
+        ) {
+            return;
+        }
+
+        controller.isReloading = false;
+        controller.prepareProjectile();
+        controller.updateReserveProjectiles();
+    }, this.config.reloadDelay);
 };
 
 Game.ProjectileController.prototype.limitDragVector = function (
@@ -120,10 +392,8 @@ Game.ProjectileController.prototype.removePreparedProjectile = function () {
         this.readyProjectileNode &&
         !this.readyProjectileNode.__destructed
     ) {
-        this.readyProjectileNode.__removeFromParent();
+        this.readyProjectileNode.__visible = 0;
     }
-
-    this.readyProjectileNode = null;
 };
 
 Game.ProjectileController.prototype.pointRubberAt = function (
@@ -172,58 +442,41 @@ Game.ProjectileController.prototype.launch = function (dragVector) {
     var worldPosition = this.inputNode.__worldPosition
         .__clone()
         .sub(dragVector);
-    var projectile;
     var velocity;
-    var timerId;
-    var bodyPartIndex;
+    var projectile;
+    var shotId;
 
     playSound('punch');
-
-    projectile = this.levelNode.__addChildBox({
-        __img: this.config.image,
-        __size: this.config.size,
-        __ofs: [worldPosition.x, worldPosition.y, -20],
-        __physics: this.config.physics
-    }).update();
 
     velocity = dragVector
         .__clone()
         .__multiplyScalar(this.config.launchPower);
+    shotId = ++this.session.projectileSequence;
+    projectile = this.projectilePool.acquire(
+        worldPosition,
+        velocity,
+        shotId
+    );
 
-    if (projectile.__ph_body) {
-        projectile.__ph_body.__isProjectile = true;
-
-        for (
-            bodyPartIndex = 0;
-            bodyPartIndex < projectile.__ph_body.parts.length;
-            bodyPartIndex++
-        ) {
-            projectile.__ph_body.parts[bodyPartIndex].__isProjectile = true;
-        }
-
-        ph_Body.setInertia(projectile.__ph_body, Infinity);
-        ph_Body.setAngularVelocity(projectile.__ph_body, 0);
-        ph_Body.setVelocity(projectile.__ph_body, velocity);
+    if (!projectile) {
+        consoleLog('Projectile pool is exhausted');
+        return null;
     }
 
     this.session.projectiles.push(projectile);
 
-    timerId = _setTimeout(function () {
-        removeFromArray(timerId, controller.timers);
+    this.timerGroup.schedule(function () {
         controller.disappear(projectile);
     }, this.config.lifetime);
-    this.timers.push(timerId);
 
     return projectile;
 };
 
 Game.ProjectileController.prototype.disappear = function (projectile) {
     var controller = this;
-    var parent;
     var x;
     var y;
     var feather;
-    var timerId;
 
     if (
         !projectile ||
@@ -234,7 +487,6 @@ Game.ProjectileController.prototype.disappear = function (projectile) {
     }
 
     projectile.__disappearing = true;
-    parent = projectile.__parent;
     x = projectile.__offset.x;
     y = projectile.__offset.y;
 
@@ -245,52 +497,71 @@ Game.ProjectileController.prototype.disappear = function (projectile) {
         __alpha: 0
     }, 0.3, 0, easeSineO);
 
-    if (parent) {
-        feather = parent.__addChildBox({
-            __img: 'feather',
-            __ofs: [x, y, -21],
-            __size: [42, 42],
-            __rotate: randomInt(0, 360),
-            __alpha: 0.9
-        }).update();
+    if (this.vfxPool) {
+        feather = this.vfxPool.acquire('feather');
 
-        feather.__anim({
-            __x: x + randomInt(-12, 12),
-            __y: y - 18,
-            __rotate: feather.__rotate + randomInt(80, 160),
-            __scaleF: 0.75,
-            __alpha: 0
-        }, 0.4, 0, easeSineO).__removeAfter(0.42);
+        if (feather) {
+            feather.__x = x;
+            feather.__y = y;
+            feather.__width = 42;
+            feather.__height = 42;
+            feather.__rotate = randomInt(0, 360);
+            feather.__alpha = 0.9;
+
+            feather.__anim({
+                __x: x + randomInt(-12, 12),
+                __y: y - 18,
+                __rotate: feather.__rotate + randomInt(80, 160),
+                __scaleF: 0.75,
+                __alpha: 0
+            }, 0.4, 0, easeSineO);
+            this.vfxPool.releaseAfter('feather', feather, 0.42);
+        }
     }
 
-    timerId = _setTimeout(function () {
-        removeFromArray(timerId, controller.timers);
+    this.timerGroup.schedule(function () {
         controller.remove(projectile);
     }, 0.32);
-    this.timers.push(timerId);
 };
 
 Game.ProjectileController.prototype.remove = function (projectile) {
     removeFromArray(projectile, this.session.projectiles);
 
     if (projectile && !projectile.__destructed) {
-        projectile.__removeFromParent();
+        this.projectilePool.release(projectile);
     }
 };
 
 Game.ProjectileController.prototype.dispose = function () {
     var i;
 
-    for (i = 0; i < this.timers.length; i++) {
-        _clearTimeout(this.timers[i]);
-    }
-    this.timers = [];
+    this.timerGroup.clear();
 
     for (i = this.session.projectiles.length - 1; i >= 0; i--) {
         this.remove(this.session.projectiles[i]);
     }
 
-    this.removePreparedProjectile();
+    if (
+        this.readyProjectileNode &&
+        !this.readyProjectileNode.__destructed
+    ) {
+        this.readyProjectileNode.__removeFromParent();
+    }
+    this.readyProjectileNode = null;
+    for (i = 0; i < this.reserveProjectileNodes.length; i++) {
+        if (!this.reserveProjectileNodes[i].__destructed) {
+            this.reserveProjectileNodes[i].__removeFromParent();
+        }
+    }
+    this.reserveProjectileNodes = [];
+    if (this.ammoHudNode && !this.ammoHudNode.__destructed) {
+        this.ammoHudNode.__removeFromParent();
+    }
+    this.ammoHudNode = null;
+    this.ammoTextNode = null;
+    this.isReloading = false;
+    this.isAiming = false;
+    this.projectilePool.dispose();
     this.trajectorySystem.dispose();
 
     if (this.inputNode && !this.inputNode.__destructed) {
@@ -305,5 +576,4 @@ Game.ProjectileController.prototype.dispose = function () {
     this.rightRubberNode = null;
     this.pouchNode = null;
     this.inputNode = null;
-    this.readyProjectileNode = null;
 };

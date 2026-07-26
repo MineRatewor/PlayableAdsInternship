@@ -1,0 +1,84 @@
+[
+  {
+    "name": "lose",
+    "__color": "#170b05",
+    "__alpha": 0.76,
+    "__size": [2, 2, 1, 1],
+    "__keyframes": {
+      "loop": 0,
+      "__loopDisabled": 1,
+      "__track": {
+        "__alphaDeep": {
+          "0": 0,
+          "12": 1
+        }
+      }
+    },
+    "__childs": {
+      "modal": {
+        "__size": [920, 540],
+        "__scaleF": 0,
+        "__keyframes": {
+          "loop": 0,
+          "__loopDisabled": 1,
+          "__easing": 27,
+          "__track": {
+            "__transform": {
+              "0": [0, 36, 0.55, 0.55, 0],
+              "18": [0, -7, 1.045, 1.045, 0],
+              "25": [0, 0, 1, 1, 0]
+            }
+          }
+        },
+        "__childs": {
+          "title_shadow": {
+            "__alpha": 0.35,
+            "__size": [800, 96],
+            "__y": -76,
+            "__text": {
+              "__text": "you_lost",
+              "__fontsize": 100,
+              "__color": "#4a110d",
+              "__fontWeight": 10,
+              "__autoscale": 1
+            }
+          },
+          "title": {
+            "__size": [800, 96],
+            "__y": -82,
+            "__text": {
+              "__text": "you_lost",
+              "__fontsize": 100,
+              "__color": "#c7351d",
+              "__fontWeight": 10,
+              "__autoscale": 1,
+              "__lineWidth": 3,
+              "__lineColor": "#fff0a0",
+              "__lineAlpha": 1
+            }
+          },
+          "button": {
+            "__img": "ui_button",
+            "__size": [284, 142],
+            "__y": 95,
+            "__childs": {
+              "label": {
+                "__size": [236, 70],
+                "__text": {
+                  "__text": "try_again",
+                  "__fontsize": 36,
+                  "__color": "#ffffff",
+                  "__fontWeight": 10,
+                  "__autoscale": 1,
+                  "__lineWidth": 2,
+                  "__lineColor": "#8f160d",
+                  "__lineAlpha": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+]

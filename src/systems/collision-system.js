@@ -22,6 +22,7 @@ Game.CollisionSystem.prototype.register = function (body, callback) {
 
     if (body) {
         this.callbacks[body.id] = callback;
+        body.__gameCollisionCallback = callback;
     }
 };
 
@@ -30,12 +31,15 @@ Game.CollisionSystem.prototype.unregister = function (body) {
 
     if (body) {
         delete this.callbacks[body.id];
+        body.__gameCollisionCallback = null;
     }
 };
 
 Game.CollisionSystem.prototype.findCallback = function (body) {
     body = this.getRootBody(body);
-    return body ? this.callbacks[body.id] : undefined;
+    return body
+        ? body.__gameCollisionCallback || this.callbacks[body.id]
+        : undefined;
 };
 
 Game.CollisionSystem.prototype.getRootBody = function (body) {
@@ -46,14 +50,13 @@ Game.CollisionSystem.prototype.getRelativeImpactSpeed = function (bodyA, bodyB) 
     bodyA = this.getRootBody(bodyA);
     bodyB = this.getRootBody(bodyB);
 
-    var velocityA = bodyA.velocity;
-    var velocityB = bodyB.velocity;
-    var relativeVelocity = new Vector2(
-        velocityA.x - velocityB.x,
-        velocityA.y - velocityB.y
-    );
+    var relativeX = bodyA.velocity.x - bodyB.velocity.x;
+    var relativeY = bodyA.velocity.y - bodyB.velocity.y;
 
-    return relativeVelocity.__length();
+    return sqrt(
+        relativeX * relativeX +
+        relativeY * relativeY
+    );
 };
 
 Game.CollisionSystem.prototype.getNormalImpactSpeed = function (
@@ -104,30 +107,28 @@ Game.CollisionSystem.prototype.handleCollisions = function (
         pair = pairs[i];
         bodyA = this.getRootBody(pair.bodyA);
         bodyB = this.getRootBody(pair.bodyB);
-        speed = this.getRelativeImpactSpeed(bodyA, bodyB);
-        normalSpeed = this.getNormalImpactSpeed(bodyA, bodyB, pair);
         callbackA = this.findCallback(bodyA);
         callbackB = this.findCallback(bodyB);
 
         if (
-            callbackA &&
+            (!callbackA && !callbackB) ||
             (
-                isCollisionStart ||
-                bodyA.__isProjectile ||
-                bodyB.__isProjectile
+                !isCollisionStart &&
+                !bodyA.__isProjectile &&
+                !bodyB.__isProjectile
             )
         ) {
+            continue;
+        }
+
+        speed = this.getRelativeImpactSpeed(bodyA, bodyB);
+        normalSpeed = this.getNormalImpactSpeed(bodyA, bodyB, pair);
+
+        if (callbackA) {
             callbackA(speed, bodyB, pair, normalSpeed);
         }
 
-        if (
-            callbackB &&
-            (
-                isCollisionStart ||
-                bodyA.__isProjectile ||
-                bodyB.__isProjectile
-            )
-        ) {
+        if (callbackB) {
             callbackB(speed, bodyA, pair, normalSpeed);
         }
     }

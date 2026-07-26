@@ -1,6 +1,6 @@
 [
   {
-    "name": "level_1",
+    "name": "level_2",
     "__size": [
       1234,
       768
@@ -108,6 +108,46 @@
           10
         ],
         "__childs": {
+          "tnt_1": {
+            "__physics": {
+              "__isStatic": false,
+              "__friction": 10,
+              "__frictionAir": 1,
+              "__frictionStatic": 50,
+              "__restitution": 0,
+              "__density": 1,
+              "__bodyType": 0
+            },
+            "__img": "tnt_box",
+            "__size": [
+              32,
+              34
+            ],
+            "__ofs": [
+              300,
+              -11
+            ]
+          },
+          "target_1": {
+            "__physics": {
+              "__isStatic": false,
+              "__friction": 10,
+              "__frictionAir": 1,
+              "__frictionStatic": 50,
+              "__restitution": 0,
+              "__density": 1,
+              "__bodyType": 0
+            },
+            "__img": "block_1",
+            "__size": [
+              36,
+              35
+            ],
+            "__ofs": [
+              351,
+              -19
+            ]
+          },
           "ground": {
             "__color": "#296b22",
             "__physics": {
@@ -122,7 +162,7 @@
             "__alpha": 0,
             "__size": [
               530,
-              347
+              345
             ],
             "__ofs": [
               354,
@@ -139,14 +179,14 @@
               "__density": 1,
               "__bodyType": 0
             },
-            "__img": "stone_block.png",
+            "__img": "stone_block",
             "__size": [
               115,
               15
             ],
             "__ofs": [
               342,
-              5
+              7
             ]
           },
           "target_3": {
@@ -159,13 +199,13 @@
               "__density": 1,
               "__bodyType": 0
             },
-            "__img": "stone_block.png",
+            "__img": "stone_block",
             "__size": [
-              23,
+              17,
               72
             ],
             "__ofs": [
-              307,
+              313,
               47
             ]
           },
@@ -179,13 +219,13 @@
               "__density": 1,
               "__bodyType": 0
             },
-            "__img": "stone_block.png",
+            "__img": "stone_block",
             "__size": [
-              23,
+              17,
               73
             ],
             "__ofs": [
-              380,
+              367,
               48
             ]
           },
@@ -205,8 +245,8 @@
               39
             ],
             "__ofs": [
-              340,
-              -22
+              349,
+              -56
             ]
           },
           "wall": {
@@ -252,7 +292,6 @@
             ]
           },
           "target_5": {
-            "__anchor": {},
             "__physics": {
               "__isStatic": false,
               "__friction": 10,
@@ -262,18 +301,17 @@
               "__density": 1,
               "__bodyType": 0
             },
-            "__img": "block_1",
+            "__img": "wood_block",
             "__size": [
-              23,
+              17,
               135
             ],
             "__ofs": [
-              377,
-              -72
+              386,
+              -69
             ]
           },
           "target_6": {
-            "__skewY": -0.03490658503988659,
             "__physics": {
               "__isStatic": false,
               "__friction": 10,
@@ -283,14 +321,14 @@
               "__density": 1,
               "__bodyType": 0
             },
-            "__img": "block_1",
+            "__img": "wood_block",
             "__size": [
-              21,
+              17,
               135
             ],
             "__ofs": [
-              307,
-              -71
+              325,
+              -68
             ]
           },
           "target_7": {
@@ -303,14 +341,14 @@
               "__density": 1,
               "__bodyType": 0
             },
-            "__img": "wood_block.png",
+            "__img": "stone_block",
             "__size": [
               115,
-              14
+              15
             ],
             "__ofs": [
-              344,
-              -146
+              339,
+              -143
             ]
           },
           "target_8": {
@@ -323,14 +361,34 @@
               "__density": 1,
               "__bodyType": 0
             },
-            "__img": "wood_block.png",
+            "__img": "stone_block",
             "__size": [
               51,
               25
             ],
             "__ofs": [
-              343,
-              -166
+              338,
+              -163
+            ]
+          },
+          "enemy_2": {
+            "__physics": {
+              "__isStatic": false,
+              "__friction": 10,
+              "__frictionAir": 0.15,
+              "__frictionStatic": 50,
+              "__restitution": 0,
+              "__density": 5,
+              "__bodyType": 1
+            },
+            "__img": "enemy",
+            "__size": [
+              37,
+              39
+            ],
+            "__ofs": [
+              339,
+              56
             ]
           }
         }

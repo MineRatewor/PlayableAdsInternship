@@ -5,18 +5,26 @@ Game.LevelController = function (
     collisionSystem,
     destructibleSystem,
     enemySystem,
+    tntSystem,
     projectileController,
+    scoreSystem,
+    vfxPool,
     levels,
-    onLevelComplete
+    onLevelComplete,
+    onLevelLose
 ) {
     this.session = session;
     this.collisionSystem = collisionSystem;
     this.destructibleSystem = destructibleSystem;
     this.enemySystem = enemySystem;
+    this.tntSystem = tntSystem;
     this.projectileController = projectileController;
+    this.scoreSystem = scoreSystem;
+    this.vfxPool = vfxPool;
     this.levels = levels;
     this.onLevelComplete = onLevelComplete;
-    this.timers = [];
+    this.onLevelLose = onLevelLose;
+    this.timerGroup = new Game.TimerGroup();
     this.generation = 0;
 };
 
@@ -41,6 +49,7 @@ Game.LevelController.prototype.load = function (levelIndex) {
 
     this.session.levelIndex = levelIndex;
     this.session.status = 'loading';
+    this.scoreSystem.reset();
     generation = this.generation;
 
     this.session.levelNode = scene
@@ -68,6 +77,7 @@ Game.LevelController.prototype.load = function (levelIndex) {
             }
         });
 
+    this.vfxPool.attach(this.session.levelNode);
     this.projectileController.attach(
         this.session.levelNode,
         leftRubberNode,
@@ -75,6 +85,7 @@ Game.LevelController.prototype.load = function (levelIndex) {
         pouchNode,
         inputNode
     );
+    this.scoreSystem.attachHud(this.session.levelNode);
 
     this.schedule(function () {
         var levelNode = controller.session.levelNode;
@@ -101,8 +112,10 @@ Game.LevelController.prototype.load = function (levelIndex) {
             if (node.name.indexOf('target_') === 0) {
                 controller.destructibleSystem.registerStructure(
                     node,
-                    Game.Config.destructible.structureHp
+                    node.__userData && node.__userData.material
                 );
+            } else if (node.name.indexOf('tnt_') === 0) {
+                controller.tntSystem.register(node);
             } else if (node.name.indexOf('death_zone_') === 0) {
                 controller.enemySystem.registerDeathZone(node);
             } else if (
@@ -148,36 +161,33 @@ Game.LevelController.prototype.complete = function () {
     this.onLevelComplete();
 };
 
+Game.LevelController.prototype.lose = function () {
+    if (this.session.status !== 'playing') {
+        return;
+    }
+
+    this.session.status = 'lost';
+    this.onLevelLose();
+};
+
 Game.LevelController.prototype.schedule = function (callback, delay) {
-    var controller = this;
-    var generation = this.generation;
-    var timerId = _setTimeout(function () {
-        removeFromArray(timerId, controller.timers);
-
-        if (controller.generation === generation) {
-            callback();
-        }
-    }, delay);
-
-    this.timers.push(timerId);
-    return timerId;
+    return this.timerGroup.schedule(callback, delay);
 };
 
 Game.LevelController.prototype.dispose = function () {
-    var i;
     var levelNode = this.session.levelNode;
 
     this.session.status = 'disposing';
     this.generation++;
 
-    for (i = 0; i < this.timers.length; i++) {
-        _clearTimeout(this.timers[i]);
-    }
-    this.timers = [];
+    this.timerGroup.clear();
 
     this.projectileController.dispose();
+    this.scoreSystem.detachHud();
+    this.tntSystem.dispose();
     this.destructibleSystem.dispose();
     this.enemySystem.dispose();
+    this.vfxPool.dispose();
 
     if (levelNode && !levelNode.__destructed) {
         levelNode.__removeFromParent();

@@ -1,6 +1,22 @@
 [
-    "play",
-    "PLAY",
-    "try_again",
-    "TRY AGAIN"
+  "play",
+  "PLAY",
+  "victory",
+  "VICTORY!",
+  "level_complete",
+  "LEVEL COMPLETE",
+  "stars_earned",
+  "STARS EARNED",
+  "points",
+  "POINTS",
+  "try_again",
+  "TRY AGAIN",
+  "next_level",
+  "NEXT LEVEL",
+  "score",
+  "SCORE",
+  "defeat",
+  "DEFEAT!",
+  "you_lost",
+  "YOU LOST"
 ]

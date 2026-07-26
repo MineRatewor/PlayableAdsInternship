@@ -1,246 +1,226 @@
 [
   {
-    "__color": "#28362f",
     "name": "win",
-    "__alpha": 0.8,
-    "__alphaDeep": 0,
-    "__size": [
-      2,
-      2,
-      1,
-      1
-    ],
+    "__color": "#170b05",
+    "__alpha": 0.76,
+    "__size": [2, 2, 1, 1],
     "__keyframes": {
       "loop": 0,
       "__loopDisabled": 1,
       "__track": {
-        "__transform": {
-          "0": [
-            0,
-            0,
-            0.6,
-            0.6,
-            0
-          ],
-          "17": [
-            0,
-            0,
-            1,
-            1,
-            0
-          ]
-        },
         "__alphaDeep": {
           "0": 0,
-          "10": 1
+          "12": 1
         }
       }
     },
     "__childs": {
-      "title": {
-        "sva": 0.9,
-        "__size": [
-          431,
-          90
-        ],
+      "modal": {
+        "__size": [920, 620],
         "__scaleF": 0,
-        "__text": {
-          "__fontsize": 80,
-          "__text": "You Win!"
-        },
-        "__y": -154,
         "__keyframes": {
           "loop": 0,
           "__loopDisabled": 1,
           "__easing": 27,
           "__track": {
             "__transform": {
-              "0": [
-                0,
-                -327.829,
-                0,
-                0,
-                0
-              ],
-              "73": [
-                0,
-                -154,
-                1,
-                1,
-                0
-              ]
+              "0": [0, 36, 0.55, 0.55, 0],
+              "18": [0, -7, 1.045, 1.045, 0],
+              "25": [0, 0, 1, 1, 0]
             }
           }
-        }
-      },
-      "stars": {
-        "__size": [
-          297,
-          68
-        ],
+        },
         "__childs": {
-          "_0": {
-            "__img": "star",
-            "sva": 1.1,
-            "__size": [
-              100,
-              100
-            ],
-            "__scaleF": 0,
-            "__ofs": [
-              -13,
-              -18
-            ],
-            "__keyframes": {
-              "loop": 0,
-              "__loopDisabled": 1,
-              "__easing": 6,
-              "__track": {
-                "__transform": {
-                  "0": [
-                    -13,
-                    -18,
-                    0,
-                    0,
-                    0
-                  ],
-                  "14": [
-                    -13,
-                    -18,
-                    0,
-                    0,
-                    0
-                  ],
-                  "82": [
-                    -13,
-                    -18,
-                    1,
-                    1,
-                    0
-                  ]
+          "background_glow": {
+            "__img": "ui_star_glow",
+            "__alpha": 0.28,
+            "__size": [660, 660],
+            "__y": -34
+          },
+          "victory_panel": {
+            "__img": "ui_victory_panel",
+            "__size": [870, 327],
+            "__y": -38
+          },
+          "title_shadow": {
+            "__alpha": 0.34,
+            "__size": [600, 72],
+            "__y": -152,
+            "__text": {
+              "__text": "victory",
+              "__fontsize": 110,
+              "__color": "#5c160a",
+              "__fontWeight": 10,
+              "__autoscale": 1
+            }
+          },
+          "title": {
+            "__size": [600, 72],
+            "__y": -158,
+            "__text": {
+              "__text": "victory",
+              "__fontsize": 110,
+              "__color": "#c7351d",
+              "__fontWeight": 10,
+              "__autoscale": 1,
+              "__lineWidth": 3,
+              "__lineColor": "#fff0a0",
+              "__lineAlpha": 1
+            }
+          },
+          "subtitle": {
+            "__size": [520, 40],
+            "__y": -105,
+            "__text": {
+              "__text": "level_complete",
+              "__fontsize": 48,
+              "__color": "#ffffff",
+              "__fontWeight": 10,
+              "__autoscale": 1,
+              "__lineWidth": 2,
+              "__lineColor": "#7b3b15",
+              "__lineAlpha": 1
+            }
+          },
+          "stars": {
+            "__size": [540, 180],
+            "__y": -24,
+            "__childs": {
+              "star_slot_1": {
+                "__img": "ui_star_empty",
+                "__size": [142, 142],
+                "__x": -166,
+                "__y": 12,
+                "__rotate": -8
+              },
+              "star_slot_2": {
+                "__img": "ui_star_empty",
+                "__size": [164, 164],
+                "__y": -3
+              },
+              "star_slot_3": {
+                "__img": "ui_star_empty",
+                "__size": [142, 142],
+                "__x": 166,
+                "__y": 12,
+                "__rotate": 8
+              },
+              "star_1_glow": {
+                "__img": "ui_star_glow",
+                "__alpha": 0,
+                "__size": [224, 224],
+                "__x": -166,
+                "__y": 12
+              },
+              "star_2_glow": {
+                "__img": "ui_star_glow",
+                "__alpha": 0,
+                "__size": [250, 250],
+                "__y": -3
+              },
+              "star_3_glow": {
+                "__img": "ui_star_glow",
+                "__alpha": 0,
+                "__size": [224, 224],
+                "__x": 166,
+                "__y": 12
+              },
+              "star_1": {
+                "__img": "ui_star_filled",
+                "__size": [142, 142],
+                "__scaleF": 0,
+                "__x": -166,
+                "__y": 12,
+                "__rotate": -8,
+                "__z": -1
+              },
+              "star_2": {
+                "__img": "ui_star_filled",
+                "__size": [164, 164],
+                "__scaleF": 0,
+                "__y": -3,
+                "__z": -1
+              },
+              "star_3": {
+                "__img": "ui_star_filled",
+                "__size": [142, 142],
+                "__scaleF": 0,
+                "__x": 166,
+                "__y": 12,
+                "__rotate": 8,
+                "__z": -1
+              }
+            }
+          },
+          "sparkle_left": {
+            "__img": "ui_sparkle",
+            "__size": [42, 42],
+            "__x": -335,
+            "__y": -115,
+            "__rotate": -8
+          },
+          "sparkle_right": {
+            "__img": "ui_sparkle",
+            "__size": [56, 56],
+            "__x": 340,
+            "__y": -96,
+            "__rotate": 12
+          },
+          "sparkle_top": {
+            "__img": "ui_sparkle",
+            "__size": [32, 32],
+            "__x": 260,
+            "__y": -190
+          },
+          "score_value": {
+            "__size": [500, 46],
+            "__y": 88,
+            "__text": {
+              "__text": "0",
+              "__fontsize": 48,
+              "__color": "#ffffff",
+              "__fontWeight": 10,
+              "__autoscale": 1,
+              "__dontLocalize": 1,
+              "__lineWidth": 2,
+              "__lineColor": "#5c160a",
+              "__lineAlpha": 1
+            }
+          },
+          "button": {
+            "__img": "ui_button",
+            "__size": [284, 142],
+            "__y": 207,
+            "__childs": {
+              "label": {
+                "__size": [236, 70],
+                "__text": {
+                  "__text": "try_again",
+                  "__fontsize": 36,
+                  "__color": "#ffffff",
+                  "__fontWeight": 10,
+                  "__autoscale": 1,
+                  "__lineWidth": 2,
+                  "__lineColor": "#8f160d",
+                  "__lineAlpha": 1
                 }
               }
             }
           },
-          "_1": {
-            "__rotate": -13.21,
-            "__img": "star",
-            "sva": 1.1,
-            "__size": [
-              100,
-              100
-            ],
-            "__scaleF": 0.8,
-            "__ofs": [
-              92,
-              10
-            ],
-            "__keyframes": {
-              "loop": 0,
-              "__loopDisabled": 1,
-              "__easing": 6,
-              "__track": {
-                "__transform": {
-                  "0": [
-                    92,
-                    10,
-                    0,
-                    0,
-                    -13.21
-                  ],
-                  "23": [
-                    92,
-                    10,
-                    0,
-                    0,
-                    -13.21
-                  ],
-                  "82": [
-                    92,
-                    10,
-                    0.8,
-                    0.8,
-                    -13.21
-                  ]
-                }
-              }
-            }
-          },
-          "_2": {
-            "__rotate": 10.87,
-            "__img": "star",
-            "sva": 1.1,
-            "__size": [
-              100,
-              100
-            ],
-            "__scaleF": 0,
-            "__ofs": [
-              -114,
-              4
-            ],
-            "__keyframes": {
-              "loop": 0,
-              "__loopDisabled": 1,
-              "__easing": 6,
-              "__track": {
-                "__transform": {
-                  "0": [
-                    -114,
-                    4,
-                    0,
-                    0,
-                    10.87
-                  ],
-                  "47": [
-                    -114,
-                    4,
-                    0.8,
-                    0.8,
-                    10.87
-                  ]
-                }
-              }
-            }
-          }
-        }
-      },
-      "button": {
-        "__color": "#832aa0",
-        "__img": "circle1",
-        "sva": 1.3,
-        "__corner": [
-          11,
-          11
-        ],
-        "__size": [
-          321,
-          94
-        ],
-        "__scaleF": 0,
-        "__text": {
-          "__text": "try_again"
-        },
-        "__keyframes": {
-          "loop": 0,
-          "__loopDisabled": 1,
-          "__easing": 27,
-          "__track": {
-            "__transform": {
-              "0": [
-                0,
-                307.166,
-                0,
-                0,
-                0
-              ],
-              "84": [
-                0,
-                0,
-                1,
-                1,
-                0
-              ]
+          "next_level_button": {
+            "__img": "ui_button",
+            "__visible": 0,
+            "__size": [284, 142],
+            "__y": 207,
+            "__text": {
+              "__text": "next_level",
+              "__fontsize": 48,
+              "__color": "#ffffff",
+              "__fontWeight": 10,
+              "__autoscale": 1,
+              "__lineWidth": 2,
+              "__lineColor": "#8f160d",
+              "__lineAlpha": 1
             }
           }
         }
