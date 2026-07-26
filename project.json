@@ -33,6 +33,7 @@
             "core/game-session.js",
             "systems/collision-system.js",
             "systems/destructible-system.js",
+            "systems/enemy-system.js",
             "systems/trajectory/trajectory-target-cache.js",
             "systems/trajectory/trajectory-point-pool.js",
             "systems/trajectory/trajectory-predictor.js",
@@ -86,6 +87,11 @@
             "atlas",
             "build_res/atlas-1.png?",
             "build_res/atlas-1.json?"
+        ],
+        [
+            "atlas",
+            "build_res/atlas-2.png?",
+            "build_res/atlas-2.json?"
         ],
         [
             "effect",

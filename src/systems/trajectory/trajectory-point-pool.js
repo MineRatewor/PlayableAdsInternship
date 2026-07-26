@@ -12,12 +12,13 @@ Game.TrajectoryPointPool.prototype.attach = function (parentNode) {
 };
 
 Game.TrajectoryPointPool.prototype.ensureCapacity = function () {
-    var point;
+    var outline;
+    var fill;
 
     while (this.nodes.length < this.config.points) {
-        point = this.parentNode.__addChildBox({
+        outline = this.parentNode.__addChildBox({
             __img: 'circle1',
-            __color: this.config.color,
+            __color: this.config.outlineColor,
             __alpha: this.config.startAlpha,
             __size: [
                 this.config.startSize,
@@ -26,7 +27,19 @@ Game.TrajectoryPointPool.prototype.ensureCapacity = function () {
             __z: this.config.z,
             __visible: 0
         }).update();
-        this.nodes.push(point);
+        fill = outline.__addChildBox({
+            __img: 'circle1',
+            __color: this.config.color,
+            __size: [
+                this.config.startSize,
+                this.config.startSize
+            ],
+            __z: -1
+        }).update();
+        this.nodes.push({
+            outline: outline,
+            fill: fill
+        });
     }
 };
 
@@ -46,24 +59,32 @@ Game.TrajectoryPointPool.prototype.show = function (
             this.config.endSize -
             this.config.startSize
         ) * progress;
-
-    point.__x = x;
-    point.__y = y;
-    point.__width = size;
-    point.__height = size;
-    point.__alpha = this.config.startAlpha +
+    var outlineWidth = Math.max(
+        1,
+        size * this.config.outlineFactor
+    );
+    var fillSize = Math.max(1, size - outlineWidth * 2);
+    var alpha = this.config.startAlpha +
         (
             this.config.endAlpha -
             this.config.startAlpha
         ) * progress;
-    point.__visible = 1;
+
+    point.outline.__x = x;
+    point.outline.__y = y;
+    point.outline.__width = size;
+    point.outline.__height = size;
+    point.outline.__alpha = alpha;
+    point.outline.__visible = 1;
+    point.fill.__width = fillSize;
+    point.fill.__height = fillSize;
 };
 
 Game.TrajectoryPointPool.prototype.end = function () {
     var i;
 
     for (i = this.activeCount; i < this.nodes.length; i++) {
-        this.nodes[i].__visible = 0;
+        this.nodes[i].outline.__visible = 0;
     }
 };
 
@@ -76,8 +97,8 @@ Game.TrajectoryPointPool.prototype.dispose = function () {
     var i;
 
     for (i = 0; i < this.nodes.length; i++) {
-        if (!this.nodes[i].__destructed) {
-            this.nodes[i].__removeFromParent();
+        if (!this.nodes[i].outline.__destructed) {
+            this.nodes[i].outline.__removeFromParent();
         }
     }
 

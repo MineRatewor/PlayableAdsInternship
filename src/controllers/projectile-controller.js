@@ -47,9 +47,14 @@ Game.ProjectileController.prototype.attach = function (
         var dragVector = this.__worldPosition
             .__clone()
             .sub(new Vector2(x, y));
+        var pouchPosition;
 
+        controller.limitDragVector(dragVector);
         this.__dmouse = dragVector;
-        controller.movePouch(x, y);
+        pouchPosition = this.__worldPosition
+            .__clone()
+            .sub(dragVector);
+        controller.movePouch(pouchPosition.x, pouchPosition.y);
         controller.trajectorySystem.update(dragVector);
     };
 
@@ -85,6 +90,29 @@ Game.ProjectileController.prototype.prepareProjectile = function () {
     }).update();
 
     return this.readyProjectileNode;
+};
+
+Game.ProjectileController.prototype.limitDragVector = function (
+    dragVector
+) {
+    var maxDistance = this.config.maxPullDistance;
+    var distanceSquared;
+
+    if (!maxDistance || maxDistance <= 0) {
+        return dragVector;
+    }
+
+    distanceSquared =
+        dragVector.x * dragVector.x +
+        dragVector.y * dragVector.y;
+
+    if (distanceSquared > maxDistance * maxDistance) {
+        dragVector.__multiplyScalar(
+            maxDistance / Math.sqrt(distanceSquared)
+        );
+    }
+
+    return dragVector;
 };
 
 Game.ProjectileController.prototype.removePreparedProjectile = function () {
@@ -147,6 +175,7 @@ Game.ProjectileController.prototype.launch = function (dragVector) {
     var projectile;
     var velocity;
     var timerId;
+    var bodyPartIndex;
 
     playSound('punch');
 
@@ -162,6 +191,16 @@ Game.ProjectileController.prototype.launch = function (dragVector) {
         .__multiplyScalar(this.config.launchPower);
 
     if (projectile.__ph_body) {
+        projectile.__ph_body.__isProjectile = true;
+
+        for (
+            bodyPartIndex = 0;
+            bodyPartIndex < projectile.__ph_body.parts.length;
+            bodyPartIndex++
+        ) {
+            projectile.__ph_body.parts[bodyPartIndex].__isProjectile = true;
+        }
+
         ph_Body.setInertia(projectile.__ph_body, Infinity);
         ph_Body.setAngularVelocity(projectile.__ph_body, 0);
         ph_Body.setVelocity(projectile.__ph_body, velocity);
@@ -170,12 +209,65 @@ Game.ProjectileController.prototype.launch = function (dragVector) {
     this.session.projectiles.push(projectile);
 
     timerId = _setTimeout(function () {
-        controller.remove(projectile);
         removeFromArray(timerId, controller.timers);
+        controller.disappear(projectile);
     }, this.config.lifetime);
     this.timers.push(timerId);
 
     return projectile;
+};
+
+Game.ProjectileController.prototype.disappear = function (projectile) {
+    var controller = this;
+    var parent;
+    var x;
+    var y;
+    var feather;
+    var timerId;
+
+    if (
+        !projectile ||
+        projectile.__destructed ||
+        projectile.__disappearing
+    ) {
+        return;
+    }
+
+    projectile.__disappearing = true;
+    parent = projectile.__parent;
+    x = projectile.__offset.x;
+    y = projectile.__offset.y;
+
+    projectile.__physics = 0;
+    projectile.__killAllAnimations();
+    projectile.__anim({
+        __scaleF: 0.65,
+        __alpha: 0
+    }, 0.3, 0, easeSineO);
+
+    if (parent) {
+        feather = parent.__addChildBox({
+            __img: 'feather',
+            __ofs: [x, y, -21],
+            __size: [42, 42],
+            __rotate: randomInt(0, 360),
+            __alpha: 0.9
+        }).update();
+
+        feather.__anim({
+            __x: x + randomInt(-12, 12),
+            __y: y - 18,
+            __rotate: feather.__rotate + randomInt(80, 160),
+            __scaleF: 0.75,
+            __alpha: 0
+        }, 0.4, 0, easeSineO).__removeAfter(0.42);
+    }
+
+    timerId = _setTimeout(function () {
+        removeFromArray(timerId, controller.timers);
+        controller.remove(projectile);
+    }, 0.32);
+    this.timers.push(timerId);
 };
 
 Game.ProjectileController.prototype.remove = function (projectile) {

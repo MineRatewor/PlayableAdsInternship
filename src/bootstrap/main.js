@@ -23,7 +23,12 @@ Game.projectiles = new Game.ProjectileController(
 );
 Game.destructibles = new Game.DestructibleSystem(
     Game.session,
+    Game.collisionSystem
+);
+Game.enemies = new Game.EnemySystem(
+    Game.session,
     Game.collisionSystem,
+    Game.Config.enemy,
     function () {
         Game.levelController.complete();
     }
@@ -32,6 +37,7 @@ Game.levelController = new Game.LevelController(
     Game.session,
     Game.collisionSystem,
     Game.destructibles,
+    Game.enemies,
     Game.projectiles,
     Game.Config.levels,
     function () {

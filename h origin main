@@ -1,0 +1,53 @@
+ .atlasProxy                                       |    1 [32m+[m
+ build_res/atlas-1.json                            |    2 [32m+[m[31m-[m
+ build_res/atlas-1.png                             |  Bin [31m184367[m -> [32m201338[m bytes
+ build_res/atlas-2.json                            |    1 [32m+[m
+ build_res/atlas-2.png                             |  Bin [31m0[m -> [32m100627[m bytes
+ build_res/data.js                                 |  151 [32m++[m[31m-[m
+ build_res/min.js                                  | 1111 [32m+++++++++++[m[31m----------[m
+ build_res/opts.json                               |    2 [32m+[m[31m-[m
+ builds/1.0.0/index.html                           | 1111 [32m+++++++++++[m[31m----------[m
+ img/Background.png                                |  Bin [31m0[m -> [32m1892220[m bytes
+ img/Enemy.png                                     |  Bin [31m0[m -> [32m670988[m bytes
+ img/bird_2.png                                    |  Bin [31m22192[m -> [32m0[m bytes
+ img/bird_3.png                                    |  Bin [31m24174[m -> [32m0[m bytes
+ img/bird_4.png                                    |  Bin [31m22900[m -> [32m0[m bytes
+ img/bird_5.png                                    |  Bin [31m21893[m -> [32m0[m bytes
+ img/bird_6.png                                    |  Bin [31m21916[m -> [32m0[m bytes
+ img/bird_7.png                                    |  Bin [31m23969[m -> [32m0[m bytes
+ img/bird_8.png                                    |  Bin [31m22936[m -> [32m0[m bytes
+ img/bird_animations.png                           |  Bin [31m1393710[m -> [32m0[m bytes
+ img/bird_animations_chroma.png                    |  Bin [31m1811335[m -> [32m0[m bytes
+ img/bird_flight_1.png                             |  Bin [31m15158[m -> [32m0[m bytes
+ img/bird_flight_2.png                             |  Bin [31m14041[m -> [32m0[m bytes
+ img/bird_flight_3.png                             |  Bin [31m13469[m -> [32m0[m bytes
+ img/bird_flight_4.png                             |  Bin [31m13650[m -> [32m0[m bytes
+ img/bird_flight_sheet.png                         |  Bin [31m915805[m -> [32m0[m bytes
+ img/bird_flight_sheet_chroma.png                  |  Bin [31m1481439[m -> [32m0[m bytes
+ img/bird_idle_1.png                               |  Bin [31m15129[m -> [32m0[m bytes
+ img/bird_idle_2.png                               |  Bin [31m15737[m -> [32m0[m bytes
+ img/bird_idle_3.png                               |  Bin [31m14336[m -> [32m0[m bytes
+ img/bird_idle_4.png                               |  Bin [31m14717[m -> [32m0[m bytes
+ img/bird_idle_sheet.png                           |  Bin [31m972996[m -> [32m0[m bytes
+ img/bird_idle_sheet_chroma.png                    |  Bin [31m1514992[m -> [32m0[m bytes
+ img/bird_pull_1.png                               |  Bin [31m17078[m -> [32m0[m bytes
+ img/bird_pull_2.png                               |  Bin [31m16172[m -> [32m0[m bytes
+ img/bird_pull_3.png                               |  Bin [31m15221[m -> [32m0[m bytes
+ img/bird_pull_4.png                               |  Bin [31m14335[m -> [32m0[m bytes
+ img/bird_pull_sheet.png                           |  Bin [31m1027808[m -> [32m0[m bytes
+ img/bird_pull_sheet_chroma.png                    |  Bin [31m1548817[m -> [32m0[m bytes
+ img/enemy_atlas.png                               |  Bin [31m0[m -> [32m21236[m bytes
+ img/feather.png                                   |  Bin [31m0[m -> [32m100627[m bytes
+ layouts/level_1.json                              |  224 [32m++++[m[31m-[m
+ project.json                                      |   10 [32m+[m[31m-[m
+ src/bootstrap/main.js                             |    6 [32m+[m
+ src/config/game-config.js                         |   20 [32m+[m[31m-[m
+ src/controllers/level-controller.js               |   46 [32m+[m[31m-[m
+ src/controllers/projectile-controller.js          |   96 [32m+[m[31m-[m
+ src/core/game-session.js                          |   10 [32m+[m[31m-[m
+ src/systems/collision-system.js                   |  112 [32m++[m[31m-[m
+ src/systems/destructible-system.js                |   63 [32m+[m[31m-[m
+ src/systems/enemy-system.js                       |  371 [32m+++++++[m
+ src/systems/trajectory/trajectory-point-pool.js   |   49 [32m+[m[31m-[m
+ src/systems/trajectory/trajectory-target-cache.js |    5 [32m+[m[31m-[m
+ 52 files changed, 2095 insertions(+), 1296 deletions(-)

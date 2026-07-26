@@ -1,26 +1,24 @@
 var Game = Game || {};
 
-Game.DestructibleSystem = function (session, collisionSystem, onAllTargetsDestroyed) {
+Game.DestructibleSystem = function (session, collisionSystem) {
     this.session = session;
     this.collisionSystem = collisionSystem;
-    this.onAllTargetsDestroyed = onAllTargetsDestroyed;
     this.awakeScheduled = false;
     this.active = false;
     this.generation = 0;
     this.timers = [];
 };
 
-Game.DestructibleSystem.prototype.registerTarget = function (node, hp) {
+Game.DestructibleSystem.prototype.registerStructure = function (node, hp) {
     this.active = true;
-    this.session.targets.push(node);
-    this.session.targetsLeft++;
-    node.__isRegisteredTarget = true;
+    this.session.structures.push(node);
+    node.__destructibleType = 'structure';
     this.registerDamage(node, hp);
 };
 
 Game.DestructibleSystem.prototype.registerFragment = function (node, hp) {
     this.session.fragments.push(node);
-    node.__isRegisteredTarget = false;
+    node.__destructibleType = 'fragment';
     this.registerDamage(node, hp);
 };
 
@@ -48,11 +46,13 @@ Game.DestructibleSystem.prototype.damage = function (node, impactSpeed) {
         return;
     }
 
-    damage = floor(clamp(
-        (impactSpeed - 1) * (impactSpeed - 2),
-        0,
-        100
-    ));
+    damage = impactSpeed <= 2
+        ? 0
+        : floor(clamp(
+            (impactSpeed - 1) * (impactSpeed - 2),
+            0,
+            100
+        ));
 
     if (!damage) {
         return;
@@ -79,7 +79,8 @@ Game.DestructibleSystem.prototype.remove = function (node) {
     var size;
     var x;
     var y;
-    var isTarget;
+    var destructibleType;
+    var collection;
 
     if (!this.active || !node || node.__destructed) {
         return;
@@ -90,27 +91,22 @@ Game.DestructibleSystem.prototype.remove = function (node) {
     size = node.__size;
     x = node.__x;
     y = node.__y;
-    isTarget = node.__isRegisteredTarget;
+    destructibleType = node.__destructibleType;
+    collection = destructibleType === 'structure'
+        ? this.session.structures
+        : this.session.fragments;
 
     if (body) {
         this.collisionSystem.unregister(body);
     }
 
-    removeFromArray(
-        node,
-        isTarget ? this.session.targets : this.session.fragments
-    );
+    removeFromArray(node, collection);
     node.__removeFromParent();
-    this.scheduleAwakeTargets();
+    this.scheduleAwakeDestructibles();
 
-    if (isTarget) {
+    if (destructibleType === 'structure') {
         this.playBreakSound();
         this.createFragments(x, y, size, velocity);
-        this.session.targetsLeft--;
-
-        if (this.session.targetsLeft === 0) {
-            this.onAllTargetsDestroyed();
-        }
     } else if (random() > 0.5 && !windowManager.__hasOpenedWindow()) {
         this.playBreakSound();
     }
@@ -137,6 +133,7 @@ Game.DestructibleSystem.prototype.createFragment = function (x, y, velocity) {
         __img: 'break_' + randomInt(1, 9),
         __ofs: [x, y, -20],
         __rotate: randomInt(0, 360),
+        __scaleF: 0.4,
         __physics: {
             __isStatic: false,
             __friction: 10,
@@ -153,6 +150,7 @@ Game.DestructibleSystem.prototype.createFragment = function (x, y, velocity) {
             return;
         }
 
+        ph_Body.scale(fragment.__ph_body, 0.4, 0.4);
         ph_Body.setVelocity(fragment.__ph_body, new Vector2(
             velocity.x + randomFloat(-10, 10),
             velocity.y + randomFloat(-8, 3)
@@ -175,7 +173,7 @@ Game.DestructibleSystem.prototype.createFragment = function (x, y, velocity) {
     });
 };
 
-Game.DestructibleSystem.prototype.scheduleAwakeTargets = function () {
+Game.DestructibleSystem.prototype.scheduleAwakeDestructibles = function () {
     var destructibles = this;
     var generation = this.generation;
 
@@ -190,8 +188,8 @@ Game.DestructibleSystem.prototype.scheduleAwakeTargets = function () {
         }
 
         destructibles.awakeScheduled = false;
-        $each(destructibles.session.targets, function (target) {
-            target.__ph_awake();
+        $each(destructibles.session.structures, function (structure) {
+            structure.__ph_awake();
         });
     });
 };
@@ -231,9 +229,9 @@ Game.DestructibleSystem.prototype.dispose = function () {
     }
     this.timers = [];
 
-    $each(this.session.targets, function (target) {
-        if (target.__ph_body) {
-            collisionSystem.unregister(target.__ph_body);
+    $each(this.session.structures, function (structure) {
+        if (structure.__ph_body) {
+            collisionSystem.unregister(structure.__ph_body);
         }
     });
 
@@ -243,8 +241,7 @@ Game.DestructibleSystem.prototype.dispose = function () {
         }
     });
 
-    this.session.targets = [];
+    this.session.structures = [];
     this.session.fragments = [];
-    this.session.targetsLeft = 0;
     this.awakeScheduled = false;
 };

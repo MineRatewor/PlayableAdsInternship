@@ -15,7 +15,10 @@ Game.TrajectoryTargetCache.prototype.refresh = function (levelNode) {
         if (
             node.__destructed ||
             !node.name ||
-            node.name.indexOf('target_') !== 0
+            (
+                node.name.indexOf('target_') !== 0 &&
+                node.name.indexOf('enemy_') !== 0
+            )
         ) {
             return;
         }

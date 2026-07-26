@@ -8,9 +8,10 @@ Game.Config = {
     ],
     projectile: {
         image: 'bird_1',
-        size: [72, 72],
-        readySize: [52, 52],
-        readyOffset: [0, -6, 8],
+        size: [22, 22],
+        readySize: [16, 16],
+        readyOffset: [0, -2, 8],
+        maxPullDistance: 125,
         launchPower: 0.2,
         lifetime: 2,
         trajectory: {
@@ -20,6 +21,8 @@ Game.Config = {
             startSize: 14,
             endSize: 5,
             color: '#ffffff',
+            outlineColor: '#000000',
+            outlineFactor: 0.14,
             startAlpha: 0.95,
             endAlpha: 0.5,
             z: -18
@@ -35,7 +38,16 @@ Game.Config = {
         }
     },
     destructible: {
-        targetHp: 100,
+        structureHp: 100,
         fragmentHp: 50
+    },
+    enemy: {
+        hp: 160,
+        projectileDamage: 90,
+        collisionDamageMultiplier: 35,
+        minCollisionSpeed: 1.5,
+        density: 1.5,
+        frictionAir: 0.15,
+        sleepThreshold: 0
     }
 };

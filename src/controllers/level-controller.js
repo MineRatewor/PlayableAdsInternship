@@ -4,6 +4,7 @@ Game.LevelController = function (
     session,
     collisionSystem,
     destructibleSystem,
+    enemySystem,
     projectileController,
     levels,
     onLevelComplete
@@ -11,6 +12,7 @@ Game.LevelController = function (
     this.session = session;
     this.collisionSystem = collisionSystem;
     this.destructibleSystem = destructibleSystem;
+    this.enemySystem = enemySystem;
     this.projectileController = projectileController;
     this.levels = levels;
     this.onLevelComplete = onLevelComplete;
@@ -26,6 +28,8 @@ Game.LevelController.prototype.load = function (levelIndex) {
     var rightRubberNode;
     var pouchNode;
     var generation;
+    var enemiesRegistered;
+    var enemyNodes = [];
 
     if (!levelConfig) {
         throw new Error('Unknown level index: ' + levelIndex);
@@ -57,6 +61,10 @@ Game.LevelController.prototype.load = function (levelIndex) {
 
             userInputArea: function (node) {
                 inputNode = node;
+            },
+
+            enemy_1: function (node) {
+                enemyNodes.push(node);
             }
         });
 
@@ -77,22 +85,45 @@ Game.LevelController.prototype.load = function (levelIndex) {
 
         levelNode.update(1);
         controller.collisionSystem.start();
+        enemiesRegistered = 0;
+
+        $each(enemyNodes, function (enemyNode) {
+            if (controller.enemySystem.register(enemyNode)) {
+                enemiesRegistered++;
+            }
+        });
 
         levelNode.__traverse(function (node) {
-            if (
-                node.__ph_body &&
-                node.name &&
-                node.name.indexOf('target_') === 0
-            ) {
-                controller.destructibleSystem.registerTarget(
+            if (!node.__ph_body || !node.name) {
+                return;
+            }
+
+            if (node.name.indexOf('target_') === 0) {
+                controller.destructibleSystem.registerStructure(
                     node,
-                    Game.Config.destructible.targetHp
+                    Game.Config.destructible.structureHp
                 );
+            } else if (node.name.indexOf('death_zone_') === 0) {
+                controller.enemySystem.registerDeathZone(node);
+            } else if (
+                node.name.indexOf('enemy_') === 0 &&
+                enemyNodes.indexOf(node) === -1
+            ) {
+                if (controller.enemySystem.register(node)) {
+                    enemiesRegistered++;
+                }
             }
         });
 
         if (controller.generation === generation) {
             controller.session.status = 'playing';
+
+            if (!enemiesRegistered) {
+                consoleLog(
+                    'Level "' + levelConfig.layout +
+                    '" has no registered enemy_* nodes'
+                );
+            }
         }
     }, 0.01);
 
@@ -146,6 +177,7 @@ Game.LevelController.prototype.dispose = function () {
 
     this.projectileController.dispose();
     this.destructibleSystem.dispose();
+    this.enemySystem.dispose();
 
     if (levelNode && !levelNode.__destructed) {
         levelNode.__removeFromParent();
